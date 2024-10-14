@@ -1,13 +1,17 @@
 spring:
   application:
-    name: spring-service-skeleton
+    name: env-service
+  data:
+    mongodb:
+      uri: mongodb+srv://${MONGO_USR}:${MONGO_PWD}@${MONGO_APP}.bulegrc.mongodb.net/${MONGO_DB}?retryWrites=true&w=majority&appName=${MONGO_APP}
 
 server:
   servlet:
-    context-path: /spring-service-skeleton
+    context-path: /envsvc
 
 management:
   endpoints:
     web:
       exposure:
         include: '*'
+        exclude: 'shutdown'
