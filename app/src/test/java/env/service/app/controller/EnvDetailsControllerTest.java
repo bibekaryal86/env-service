@@ -26,6 +26,7 @@ import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.MethodOrderer;
@@ -94,7 +95,73 @@ public class EnvDetailsControllerTest {
     Mockito.reset(mongoTemplate);
   }
 
-  // @Test
+  @Test
+  void test_GetAllAppNames_Success() throws Exception {
+    when(mongoTemplate.getCollectionNames()).thenReturn(Set.of("app_one", "app_two", "app_three"));
+
+    MvcResult mvcResult =
+        mockMvc
+            .perform(
+                get("/api/v1/appNames")
+                    .with(
+                        SecurityMockMvcRequestPostProcessors.httpBasic(
+                            ConstantUtils.AUTH_USR, ConstantUtils.AUTH_PWD)))
+            .andExpect(status().isOk())
+            .andReturn();
+
+    EnvDetailsResponse envDetailsResponse =
+        objectMapper()
+            .readValue(mvcResult.getResponse().getContentAsString(), EnvDetailsResponse.class);
+
+    assertNotNull(envDetailsResponse);
+    assertNull(envDetailsResponse.getErrMsg());
+    assertNotNull(envDetailsResponse.getEnvDetails());
+    assertEquals(envDetailsResponse.getEnvDetails().size(), 1);
+    assertEquals("app_names", envDetailsResponse.getEnvDetails().getFirst().getName());
+    assertTrue(envDetailsResponse.getEnvDetails().getFirst().getListValue().contains("one"));
+    assertTrue(envDetailsResponse.getEnvDetails().getFirst().getListValue().contains("two"));
+    assertTrue(envDetailsResponse.getEnvDetails().getFirst().getListValue().contains("three"));
+  }
+
+  @Test
+  void test_GetAllAppNames_Failure_Unauthorized() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/v1/appNames")
+                .with(
+                    SecurityMockMvcRequestPostProcessors.httpBasic(
+                        ConstantUtils.AUTH_USR, "invalid_password")))
+        .andExpect(status().isUnauthorized())
+        .andReturn();
+  }
+
+  @Test
+  void test_GetAllAppNames_Failure_Exception() throws Exception {
+    when(mongoTemplate.getCollectionNames())
+        .thenThrow(new MongoInternalException("Mongo Internal Exception"));
+
+    MvcResult mvcResult =
+        mockMvc
+            .perform(
+                get("/api/v1/appNames")
+                    .with(
+                        SecurityMockMvcRequestPostProcessors.httpBasic(
+                            ConstantUtils.AUTH_USR, ConstantUtils.AUTH_PWD)))
+            .andExpect(status().isInternalServerError())
+            .andReturn();
+
+    EnvDetailsResponse envDetailsResponse =
+        objectMapper()
+            .readValue(mvcResult.getResponse().getContentAsString(), EnvDetailsResponse.class);
+
+    assertNotNull(envDetailsResponse);
+    assertNull(envDetailsResponse.getEnvDetails());
+    assertNotNull(envDetailsResponse.getErrMsg());
+    assertEquals(
+        "Look App Names Exception: Mongo Internal Exception", envDetailsResponse.getErrMsg());
+  }
+
+  @Test
   void test_Create_Success() throws Exception {
     when(mongoTemplate.save(any(EnvDetails.class), eq("app_" + TEST_COLLECTION_NAME)))
         .thenReturn(ENV_DETAILS_IN_RESPONSE);
@@ -125,7 +192,7 @@ public class EnvDetailsControllerTest {
         ENV_DETAILS_REQUEST.getName(), envDetailsResponse.getEnvDetails().getFirst().getName());
   }
 
-  // @Test
+  @Test
   void test_Create_Failure_Unauthorized() throws Exception {
     String requestBody = objectMapper().writeValueAsString(ENV_DETAILS_REQUEST);
 
@@ -141,7 +208,7 @@ public class EnvDetailsControllerTest {
         .andReturn();
   }
 
-  // @Test
+  @Test
   void test_Create_Failure_ValidationError_Name() throws Exception {
     ENV_DETAILS_REQUEST.setName(null);
     String requestBody = objectMapper().writeValueAsString(ENV_DETAILS_REQUEST);
@@ -171,7 +238,7 @@ public class EnvDetailsControllerTest {
     ENV_DETAILS_REQUEST.setName(ENV_DETAILS_IN_RESPONSE.getName());
   }
 
-  // @Test
+  @Test
   void test_Create_Failure_ValidationError_Values() throws Exception {
     ENV_DETAILS_REQUEST.setStringValue(null);
     ENV_DETAILS_REQUEST.setListValue(Collections.emptyList());
@@ -206,7 +273,7 @@ public class EnvDetailsControllerTest {
     ENV_DETAILS_REQUEST.setMapValue(ENV_DETAILS_IN_RESPONSE.getMapValue());
   }
 
-  // @Test
+  @Test
   void test_Read_Success() throws Exception {
     when(mongoTemplate.findAll(eq(EnvDetails.class), eq("app_" + TEST_COLLECTION_NAME)))
         .thenReturn(List.of(ENV_DETAILS_IN_RESPONSE));
@@ -233,7 +300,7 @@ public class EnvDetailsControllerTest {
         ENV_DETAILS_REQUEST.getName(), envDetailsResponse.getEnvDetails().getFirst().getName());
   }
 
-  // @Test
+  @Test
   void test_Read_Failure_Unauthorized() throws Exception {
     mockMvc
         .perform(
@@ -245,7 +312,7 @@ public class EnvDetailsControllerTest {
         .andReturn();
   }
 
-  // @Test
+  @Test
   void test_Read_Failure_Exception() throws Exception {
     when(mongoTemplate.findAll(eq(EnvDetails.class), eq("app_" + TEST_COLLECTION_NAME)))
         .thenThrow(new MongoInternalException("Mongo Internal Exception"));
@@ -270,7 +337,7 @@ public class EnvDetailsControllerTest {
     assertEquals("Read Exception: Mongo Internal Exception", envDetailsResponse.getErrMsg());
   }
 
-  // @Test
+  @Test
   void test_Update_Failure_NotAllowed() throws Exception {
     String requestBody = objectMapper().writeValueAsString(ENV_DETAILS_REQUEST);
 
@@ -298,7 +365,7 @@ public class EnvDetailsControllerTest {
         envDetailsResponse.getErrMsg());
   }
 
-  // @Test
+  @Test
   void test_Update_Failure_Unauthorized() throws Exception {
     String requestBody = objectMapper().writeValueAsString(ENV_DETAILS_REQUEST);
 
@@ -333,7 +400,7 @@ public class EnvDetailsControllerTest {
         .andReturn();
   }
 
-  // @Test
+  @Test
   void test_Delete_Failure_Unauthorized() throws Exception {
     mockMvc
         .perform(
@@ -347,7 +414,7 @@ public class EnvDetailsControllerTest {
         .andReturn();
   }
 
-  // @Test
+  @Test
   void test_Delete_Failure_Exception() throws Exception {
     when(mongoTemplate.remove(
             eq(new Query(Criteria.where("name").is(ENV_DETAILS_REQUEST.getName()))),

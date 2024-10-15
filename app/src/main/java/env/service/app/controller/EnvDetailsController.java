@@ -5,6 +5,7 @@ import static env.service.app.util.CommonUtils.getAppCollectionName;
 import env.service.app.model.EnvDetails;
 import env.service.app.model.EnvDetailsResponse;
 import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -30,6 +31,27 @@ import org.springframework.web.bind.annotation.RestController;
 public class EnvDetailsController {
 
   private final MongoTemplate mongoTemplate;
+
+  @GetMapping("/appNames")
+  public ResponseEntity<EnvDetailsResponse> getAllAppNames() {
+    try {
+      Set<String> collectionNames = mongoTemplate.getCollectionNames();
+      List<String> appNames =
+          collectionNames.stream().map(collectionName -> collectionName.split("_")[1]).toList();
+      return ResponseEntity.ok(
+          EnvDetailsResponse.builder()
+              .envDetails(
+                  List.of(EnvDetails.builder().name("app_names").listValue(appNames).build()))
+              .build());
+    } catch (Exception ex) {
+      log.error("Lookup App Names Exception", ex);
+      return ResponseEntity.internalServerError()
+          .body(
+              EnvDetailsResponse.builder()
+                  .errMsg("Look App Names Exception: " + ex.getMessage())
+                  .build());
+    }
+  }
 
   @PostMapping("/{appName}")
   public ResponseEntity<EnvDetailsResponse> create(
