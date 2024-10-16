@@ -8,10 +8,9 @@
     <import class="ch.qos.logback.core.ConsoleAppender"/>
 
     <property name="LOG_PATTERN"
-              value="[%d{yyyy-MM-dd'T'HH:mm:ss.SSSZ, America/Denver}] [spring-service-skeleton,%X{traceId:-},%X{spanId:-}] [${PID:-},%thread] [%level] [%c{1}] --- %msg%n"/>
-
+              value="[%d{yyyy-MM-dd'T'HH:mm:ss.SSSZ, America/Denver}] [env-service] [${PID:-},%thread] [%level] [%c{1}] --- %msg%n"/>
     <springProfile name="development">
-        <property name="LOG_FILE" value="/zzz_dev/projects/logs/spring-service-skeleton/spring-service-skeleton"/>
+        <property name="LOG_FILE" value="/zzz_dev/projects/logs/env-service/env-service"/>
 
         <appender name="FILELOG" class="RollingFileAppender">
             <file>${LOG_FILE}.log</file>
@@ -37,10 +36,6 @@
 
     <springProfile name="production,docker">
         <appender name="STDOUT" class="ConsoleAppender">
-            <!--
-            replace the encoder block below with the following if using logstash encoder in build.gradle
-            <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
-            -->
             <encoder class="PatternLayoutEncoder">
                 <pattern>${LOG_PATTERN}</pattern>
                 <charset>utf8</charset>
@@ -51,5 +46,4 @@
             <appender-ref ref="STDOUT"/>
         </root>
     </springProfile>
-
 </configuration>

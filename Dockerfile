@@ -11,7 +11,7 @@ RUN addgroup -S springdocker
 RUN adduser -S springdocker -G springdocker
 USER springdocker:springdocker
 WORKDIR /app
-COPY --from=build /app/build/libs/spring-service-skeleton.jar .
+COPY --from=build /app/build/libs/env-service.jar .
 EXPOSE 8080
-ENTRYPOINT ["java","-jar", "spring-service-skeleton.jar"]
+ENTRYPOINT ["java","-jar", "env-service.jar"]
 # provide environment variables in docker-compose

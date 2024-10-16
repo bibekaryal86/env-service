@@ -1,47 +1,71 @@
-# spring-service-skeleton
+# env-service
 
-* This is a template Repository to create a new Spring Boot REST Service
-* Things to update:
-    * Refactor the package name from `spring.service.skeleton.app` to as desired
-        * keep it 3 words if possible, eg: `xxx.xxx.xxx.app`
-    * `settings.gradle`
-        * `rootProject.name`
-    * `build.gradle`
-        * Add/Remove dependencies as necessary
-        * `springVersion`, and version in buildscript and plugin as necessary
-        * `archiveFileName` in `bootJar`
-        * `mainClass` in `application`
-    * gradle wrapper version as necessary
-    * `application.yml` as necessary
-        * at least need to replace `spring-service-skeleton` with application name
-    * `logback.xml` as necessary
-        * avoid LOG_FILE as much as possible, prefer console logging
-        * replace `spring-service-skeleton` with application name in `LOG_PATTERN` and `LOG_FILE`
-        * remove `traceId` and `spanId` if `spring-cloud-started-sleuth` is not used in `build.gradle`
-    * `Dockerfile` as necessary
-        * esp `JAR_FILE`, `COPY` and environment variables in `ENTRYPOINT`
-    * GCP configurations, in `gcp` folder as necessary
-        * esp `app-credentials.yaml` and `app-credentials_DUMMY.yaml`
-    * `README.md` i.e. this file to add the program's readme
-    * `.gitignore` if necessary
- * Things to add:
-     * `DatasourceConfig` if using MONGO/JPA/JDBC
-         * See: `pets-database-layer` for MongoDB example
-             * https://github.com/bibekaryal86/pets-database-layer
-         * See: `health-data-java` for JPA example
-             * https://github.com/bibekaryal86/health-data-java
-         * For JDBC, only need to set `Datasource` from above examples
-     * `RestTemplateConfig` if using `RestTemplate`
-         * See: `pets-service-layer` for example
-             * https://github.com/bibekaryal86/pets-service-layer
-     * `SwaggerConfig` if using SwaggerUI
-         * See: `pets-service-layer` / `pets-database-layer` for example
-             * https://github.com/bibekaryal86/pets-service-layer
-             * https://github.com/bibekaryal86/pets-database-layer
-         * Also, will have to update `SecurityConfig` to allow SwaggerUI
- * Things to remove:
-     * If not using cache
-         * Remove `CacheConfig` from config package
-         * Remove `spring-boot-starter-cache` dependency from `build.gradle`
-     * GitHub workflows
-         * Remove `dependabot.yml` in the new app until automated merge is figured out
+### Overview:
+
+This is a Spring Boot-based utility application that interacts with a MongoDB database and provides an interface
+for saving, retrieving, and deleting documents in MongoDB.
+The documents that are saved represent runtime variables that can be consumed by other applications as and when needed.
+A new MongoDb collection is created for each application, and the application name should be sent with each request.
+
+### Features:
+
+* Create: Persist data into a MongoDB collection. A new collection is created for each new application
+* Read: Fetch stored documents from the corresponding MongoDB collection
+* Update: Update functionality is not provided. If a document needs to be updated, it has to be recreated after deleting first.
+* Delete: Delete document from a MongoDB collection
+
+### Technologies:
+
+* Java
+* Spring Boot
+* Gradle
+* MongoDB
+* JUnit
+* OpenApi
+
+### Setup and Installation:
+* git clone https://github.com/bibekaryal86/env-service.git
+* Navigate to the project directory
+  * `cd env-service`
+* Build the project
+  * `./gradlew clean build`
+* Run the application
+  * The application requires the following environment variables to be provided at runtime:
+    * AUTH_USR: Username of Basic Authentication implemented in the application
+    * AUTH_PWD: Password of Basic Authentication implemented in the application
+    * MONGO_APP: MongoDB Application name, required/found in MongoDB connection string
+    * MONGO_DB: MongoDB Database name, required/found in MongoDB connection string
+    * MONGO_USR: MongoDB Database user name, required/found in MongoDB connection string
+    * MONGO_PWD: MongoDB Database user password, required/found in MongoDB connection string
+    * SPRING_PROFILES_ACTIVE: development or production or any, this is optional but best to set
+      * Profile `springboottest` is used when running JUnit tests
+      * There are matching `springProfile` configuration in `logback.xml`
+  * Run command:
+    * java -jar -DAUTH_USR=some_username -DAUTH_PWD=some_password -DMONGO_APP=some_app -DMONGO_DB=some_database -DMONGO_USR=another_user -DMONGO_PWD=another_password SPRING_PROFILES_ACTIVE=production app/build/libs/env-service.jar
+
+### API Endpoints:
+* GET /tests/ping
+  * Returns `{"ping": "successful"}`, no other functionalities
+* POST /api/v1/{appName}
+  * Create a document in collection for `appName`
+  * If a collection doesn't exist for the `appName`, collection is created and then the document in the collection
+  * Constraints:
+    * There can not be two documents with same `name` attribute in a collection
+    * A document must have `name` and one of either `stringValue`, `listValue` or `mapValue` field populated
+* GET /api/v1/{appName}
+  * Retrieve all documents in collection for `appName`
+* PUT /api/v1/{appName}/{id}
+  * Update is not allowed, this returns `Method Not Allowed` response
+* DELETE /api/v1/{appName}/{envDetailsName}
+  * Delete a document in collection for `appName` where `envDetailsName` matches `name` attribute in the document
+
+### Deployment
+This is currently deployed to Google Cloud Platform App Engine's Free Tier:
+* https://envsvc.appspot.com/envsvc/tests/ping
+* Deployment instructions:
+  * Build the project: `./gradlew clean build`
+  * Copy the generated jar file to the `gcp` library: `cp app/build/libs/env-service.jar gcp`
+  * Configure `app-credentials.yaml`
+    * copy `app-credentials_DUMMY.yaml` and update with actual values
+  * Deploy to app engine: `gcloud app deploy app.yaml`
+    * Best to start the process from `gcloud init` to select correct gcp project to deploy to
