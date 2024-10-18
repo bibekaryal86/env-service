@@ -13,6 +13,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -32,6 +33,20 @@ public class EnvDetailsController {
 
   private final MongoTemplate mongoTemplate;
 
+  @Scheduled(cron = "0 0 22 * * *")
+  void cleanupEmptyCollections() {
+    try {
+      for (String collectionName : mongoTemplate.getCollectionNames()) {
+        if (mongoTemplate.getCollection(collectionName).countDocuments() == 0) {
+          mongoTemplate.dropCollection(collectionName);
+          log.info("Cleaned Up Empty Collection: [{}]", collectionName);
+        }
+      }
+    } catch (Exception ex) {
+      log.error("Cleanup Empty Collections Exception", ex);
+    }
+  }
+
   @GetMapping("/appNames")
   public ResponseEntity<EnvDetailsResponse> getAllAppNames() {
     try {
@@ -49,6 +64,26 @@ public class EnvDetailsController {
           .body(
               EnvDetailsResponse.builder()
                   .errMsg("Look App Names Exception: " + ex.getMessage())
+                  .build());
+    }
+  }
+
+  @DeleteMapping("/appNames")
+  public ResponseEntity<EnvDetailsResponse> deleteEmptyAppNames() {
+    try {
+      for (String collectionName : mongoTemplate.getCollectionNames()) {
+        if (mongoTemplate.getCollection(collectionName).countDocuments() == 0) {
+          mongoTemplate.dropCollection(collectionName);
+          log.info("Dropped Empty Collection: [{}]", collectionName);
+        }
+      }
+      return ResponseEntity.ok().build();
+    } catch (Exception ex) {
+      log.error("Delete Empty App Names Exception", ex);
+      return ResponseEntity.internalServerError()
+          .body(
+              EnvDetailsResponse.builder()
+                  .errMsg("Delete Empty App Names Exception: " + ex.getMessage())
                   .build());
     }
   }
