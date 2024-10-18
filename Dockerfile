@@ -12,6 +12,6 @@ RUN adduser -S springdocker -G springdocker
 USER springdocker:springdocker
 WORKDIR /app
 COPY --from=build /app/build/libs/env-service.jar .
-EXPOSE 8080
+EXPOSE 8081
 ENTRYPOINT ["java","-jar", "env-service.jar"]
 # provide environment variables in docker-compose
