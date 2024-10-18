@@ -7,6 +7,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -16,6 +19,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.MongoInternalException;
+import com.mongodb.client.MongoCollection;
 import com.mongodb.client.result.DeleteResult;
 import env.service.app.config.TestSecurityConfig;
 import env.service.app.model.EnvDetails;
@@ -29,9 +33,7 @@ import java.util.Map;
 import java.util.Set;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -52,7 +54,6 @@ import org.springframework.test.web.servlet.MvcResult;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("springboottest")
 @Import({TestSecurityConfig.class})
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @EnableAutoConfiguration(exclude = MongoAutoConfiguration.class)
 @AutoConfigureMockMvc
 public class EnvDetailsControllerTest {
@@ -159,6 +160,69 @@ public class EnvDetailsControllerTest {
     assertNotNull(envDetailsResponse.getErrMsg());
     assertEquals(
         "Look App Names Exception: Mongo Internal Exception", envDetailsResponse.getErrMsg());
+  }
+
+  @Test
+  void test_DeleteEmptyAppNames_Success() throws Exception {
+    when(mongoTemplate.getCollectionNames()).thenReturn(Set.of("app_one", "app_two", "app_three"));
+    when(mongoTemplate.getCollection("app_one")).thenReturn(mock(MongoCollection.class));
+    when(mongoTemplate.getCollection("app_two")).thenReturn(mock(MongoCollection.class));
+    when(mongoTemplate.getCollection("app_three")).thenReturn(mock(MongoCollection.class));
+    when(mongoTemplate.getCollection("app_one").countDocuments()).thenReturn(0L);
+    when(mongoTemplate.getCollection("app_two").countDocuments()).thenReturn(1L);
+    when(mongoTemplate.getCollection("app_three").countDocuments()).thenReturn(2L);
+
+    mockMvc
+        .perform(
+            delete("/api/v1/appNames")
+                .with(
+                    SecurityMockMvcRequestPostProcessors.httpBasic(
+                        ConstantUtils.AUTH_USR, ConstantUtils.AUTH_PWD)))
+        .andExpect(status().isOk())
+        .andReturn();
+
+    verify(mongoTemplate).dropCollection("app_one");
+    verify(mongoTemplate, never()).dropCollection("app_two");
+    verify(mongoTemplate, never()).dropCollection("app_three");
+  }
+
+  @Test
+  void test_DeleteEmptyAppNames_Failure_Unauthorized() throws Exception {
+    mockMvc
+        .perform(
+            delete("/api/v1/appNames")
+                .with(
+                    SecurityMockMvcRequestPostProcessors.httpBasic(
+                        ConstantUtils.AUTH_USR, "invalid_password")))
+        .andExpect(status().isUnauthorized())
+        .andReturn();
+  }
+
+  @Test
+  void test_DeleteEmptyAppNames_Failure_Exception() throws Exception {
+    when(mongoTemplate.getCollectionNames())
+        .thenThrow(new MongoInternalException("Mongo Internal Exception"));
+
+    MvcResult mvcResult =
+        mockMvc
+            .perform(
+                delete("/api/v1/appNames")
+                    .with(
+                        SecurityMockMvcRequestPostProcessors.httpBasic(
+                            ConstantUtils.AUTH_USR, ConstantUtils.AUTH_PWD)))
+            .andExpect(status().isInternalServerError())
+            .andReturn();
+
+    EnvDetailsResponse envDetailsResponse =
+        objectMapper()
+            .readValue(mvcResult.getResponse().getContentAsString(), EnvDetailsResponse.class);
+
+    assertNotNull(envDetailsResponse);
+    assertNull(envDetailsResponse.getEnvDetails());
+    assertNotNull(envDetailsResponse.getErrMsg());
+    assertEquals(
+        "Delete Empty App Names Exception: Mongo Internal Exception",
+        envDetailsResponse.getErrMsg());
   }
 
   @Test
