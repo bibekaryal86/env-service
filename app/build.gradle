@@ -32,7 +32,7 @@ bootJar {
 
 dependencies {
     def springVersion = "3.3.4"
-    def junitVersion = "5.11.2"
+    def junitVersion = "5.11.3"
     
     implementation "org.springframework.boot:spring-boot-starter-actuator:$springVersion"
     implementation "org.springframework.boot:spring-boot-starter-web:$springVersion"
@@ -48,7 +48,7 @@ dependencies {
     testImplementation 'org.springframework.security:spring-security-test:6.3.3'
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.2'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.3'
     testImplementation 'org.mockito:mockito-core:5.14.2'
 }
 
