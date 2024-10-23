@@ -45,7 +45,7 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test:$springVersion") {
         exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
     }
-    testImplementation 'org.springframework.security:spring-security-test:6.3.3'
+    testImplementation 'org.springframework.security:spring-security-test:6.3.4'
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.3'
