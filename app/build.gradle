@@ -10,7 +10,7 @@ plugins {
     id 'application'
     id 'java'
     id 'io.freefair.lombok' version '8.11'
-    id 'org.springframework.boot' version '3.3.5'
+    id 'org.springframework.boot' version '3.4.0'
     id 'com.diffplug.spotless' version '6.25.0'
 }
 
@@ -31,7 +31,7 @@ bootJar {
 }
 
 dependencies {
-    def springVersion = "3.3.5"
+    def springVersion = "3.3.6"
     def junitVersion = "5.11.3"
     
     implementation "org.springframework.boot:spring-boot-starter-actuator:$springVersion"
@@ -45,7 +45,7 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test:$springVersion") {
         exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
     }
-    testImplementation 'org.springframework.security:spring-security-test:6.4.0'
+    testImplementation 'org.springframework.security:spring-security-test:6.4.1'
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.3'
