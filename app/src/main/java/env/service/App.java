@@ -29,7 +29,7 @@ public class App {
 
     SpringApplication app = new SpringApplication(App.class);
     app.setDefaultProperties(
-        singletonMap("server.port", getSystemEnvProperty(SERVER_PORT, "8081")));
+        singletonMap("server.port", getSystemEnvProperty(SERVER_PORT, "8002")));
     app.run(args);
     log.info("End application initialization...");
   }
