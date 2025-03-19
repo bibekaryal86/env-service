@@ -9,9 +9,9 @@
 plugins {
     id 'application'
     id 'java'
-    id 'io.freefair.lombok' version '8.11'
-    id 'org.springframework.boot' version '3.4.1'
-    id 'com.diffplug.spotless' version '7.0.0'
+    id 'io.freefair.lombok' version '8.13'
+    id 'org.springframework.boot' version '3.4.3'
+    id 'com.diffplug.spotless' version '7.0.2'
 }
 
 java {
@@ -31,25 +31,25 @@ bootJar {
 }
 
 dependencies {
-    def springVersion = "3.4.1"
-    def junitVersion = "5.11.4"
+    def springVersion = "3.4.3"
+    def junitVersion = "5.12.1"
     
     implementation "org.springframework.boot:spring-boot-starter-actuator:$springVersion"
     implementation "org.springframework.boot:spring-boot-starter-web:$springVersion"
     implementation "org.springframework.boot:spring-boot-starter-security:$springVersion"
     implementation "org.springframework.boot:spring-boot-starter-data-mongodb:$springVersion"
-    implementation 'ch.qos.logback:logback-classic:1.5.16'
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.1'
+    implementation 'ch.qos.logback:logback-classic:1.5.17'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.5'
 
     // FOR TESTING
     testImplementation("org.springframework.boot:spring-boot-starter-test:$springVersion") {
         exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
     }
-    testImplementation 'org.springframework.security:spring-security-test:6.4.2'
+    testImplementation 'org.springframework.security:spring-security-test:6.4.4'
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.4'
-    testImplementation 'org.mockito:mockito-core:5.15.2'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.12.1'
+    testImplementation 'org.mockito:mockito-core:5.16.1'
 }
 
 test {
