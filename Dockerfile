@@ -6,7 +6,7 @@ COPY app/src /app/src
 RUN gradle --no-daemon clean build
 
 # Deploy
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:25-jre-alpine
 RUN addgroup -S springdocker
 RUN adduser -S springdocker -G springdocker
 USER springdocker:springdocker
