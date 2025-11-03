@@ -1,4 +1,4 @@
-runtime: java21
+runtime: java25
 env: standard
 instance_class: F1    # F1, is just enough since very few dependencies
 handlers:
