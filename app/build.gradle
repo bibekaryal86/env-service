@@ -38,7 +38,7 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-web:$springVersion"
     implementation "org.springframework.boot:spring-boot-starter-security:$springVersion"
     implementation "org.springframework.boot:spring-boot-starter-data-mongodb:$springVersion"
-    implementation 'ch.qos.logback:logback-classic:1.6.2'
+    implementation 'ch.qos.logback:logback-classic:1.6.3'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.0'
 
     // FOR TESTING
